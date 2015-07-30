@@ -34,3 +34,6 @@ template "#{node['nt-deploy']['ssh_dir']}/config" do
   source "config.erb"
   variables ({:sites => sites})
 end
+
+ssh_known_hosts_entry 'github.com'
+ssh_known_hosts_entry 'bitbucket.org'
