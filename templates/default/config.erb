@@ -1,0 +1,7 @@
+<% @sites.each do |site, data| %>
+Host <%= site %>
+  HostName <%= data['repo_site'] %>
+  User <%= data['repo_user'] %>
+  IdentityFile <%= data['repo_key'] %>
+
+<% end %>
