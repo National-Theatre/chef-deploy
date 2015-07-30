@@ -1,0 +1,2 @@
+# chef-deploy
+Deployment scripts
