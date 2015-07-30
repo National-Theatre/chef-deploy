@@ -24,6 +24,7 @@ node['nt-deploy']['sites'].each do |site, data|
   puts node['nt-deploy']['sites'][site]
   sites[site] = {}
   sites[site]['repo_key'] = node['nt-deploy']['sites'][site]['repo_key']
+  sites[site]['repo_path'] = node['nt-deploy']['sites'][site]['repo_path']
   sites[site]['repo_site'] = node['nt-deploy']['sites'][site].fetch('repo_site', 'github.com')
   sites[site]['repo_user'] = node['nt-deploy']['sites'][site].fetch('repo_user', 'git')
 end
