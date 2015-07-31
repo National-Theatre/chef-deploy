@@ -35,15 +35,3 @@ end
 
 ssh_known_hosts_entry 'github.com'
 ssh_known_hosts_entry 'bitbucket.org'
-
-drupal = {}
-node['nt-deploy']['sites'].each do |site, data|
-  drupal[site] = {}
-  drupal[site]['repo_path'] = node['nt-deploy']['sites'][site]['repo_path']
-  drupal[site]['site_path'] = node['nt-deploy']['sites'][site].fetch('site_path', '/var/www')
-  drupal[site]['repo_user'] = node['nt-deploy']['sites'][site].fetch('repo_user', 'git')
-  execute 'clone_site' do
-    command "git clone #{drupal[site]['repo_user']}@#{site}:#{drupal[site]['repo_path']} #{drupal[site]['site_path']}/#{site}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}") }
-  end
-end
