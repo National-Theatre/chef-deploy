@@ -52,6 +52,11 @@ node['nt-deploy']['sites'].each do |site, data|
     mode '0755'
     action :create
     recursive true
+    only_if { drupal[site]['site_type'] == "drupal" }
+  end
+  execute 'drupal_chcon' do
+    command "chcon -R -t httpd_sys_content_t #{drupal[site]['site_path']}/#{site}/drupal"
+    only_if { drupal[site]['site_type'] == "drupal" }
   end
   
   directory "/media/ephemeral0/tmp/#{site}" do
@@ -60,6 +65,11 @@ node['nt-deploy']['sites'].each do |site, data|
     mode '0755'
     action :create
     recursive true
+    only_if { drupal[site]['site_type'] == "drupal" }
+  end
+  execute 'tmp_chcon' do
+    command "chcon -R -t httpd_sys_content_t media/ephemeral0/tmp/#{site}"
+    only_if { drupal[site]['site_type'] == "drupal" }
   end
   
   template "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php" do
