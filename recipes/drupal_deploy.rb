@@ -98,6 +98,12 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     cache_settings = ''
   end
   
+  directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}" do
+    mode '0755'
+    action :create
+    recursive true
+    only_if { drupal[site]['site_type'] == "drupal" }
+  end
   directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files" do
     owner 'apache'
     group 'apache'
@@ -109,6 +115,10 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
   execute 'drupal_chcon' do
     command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site}/drupal"
     not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+  end
+  execute 'drupal_files_chcon' do
+    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files"
+    only_if { drupal[site]['site_type'] == "drupal" }
   end
   
   directory "/media/ephemeral0/tmp/#{site}" do
@@ -185,6 +195,12 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     command "curl -o /dev/null -sS http://#{drupal[site]['site_dns']}/cron.php?cron_key=#{drupal[site]['cron_key']}"
     user    'apache'
     only_if { drupal[site]['site_type'] == "drupal" }
+  end
+  hostsfile_entry '127.0.0.1' do
+    hostname  drupal[site]['site_dns']
+    unique    true
+    comment   'Append by Recipe drupal_deploy'
+    action    :append
   end
 
 end
