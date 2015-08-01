@@ -133,7 +133,19 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/tmp/#{site}"
     not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
-  puts drupal[site]['sites_caches']
+  directory "/media/ephemeral0/private/#{site}" do
+    owner 'apache'
+    group 'apache'
+    mode '0755'
+    action :create
+    recursive true
+    only_if { drupal[site]['site_type'] == "drupal" }
+  end
+  execute 'tmp_chcon' do
+    command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/private/#{site}"
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+  end
+
   template "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php" do
     source "settings.php.erb"
     mode '0440'
