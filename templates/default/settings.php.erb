@@ -30,9 +30,12 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
 $conf['cache_prefix'] = '<%= @cache_prefix %>';
 
 $conf['cache_class_form'] = 'DrupalDatabaseCache';
-<% @sites_caches.each do |i, cache| %>
+<% @sites_caches.each do |cache| %>
 $conf['cache_backends'][] = '<%= cache %>';
 <% end %>
+
+<%= @cache_settings %>
+
 $conf['page_cache_without_database'] = TRUE;
 $conf['page_cache_invoke_hooks'] = FALSE;
 $conf['file_temporary_path'] = '/media/ephemeral0/tmp/<%= @site_name %>';

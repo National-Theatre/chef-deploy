@@ -46,6 +46,45 @@ node['nt-deploy']['sites'].each do |site, data|
   drupal[site]['site_dns'] = node['nt-deploy']['sites'][site].fetch('site_dns', 'www.example.net')
   drupal[site]['cron_key'] = node['nt-deploy']['sites'][site].fetch('cron_key', 'cron-key')
   
+  drupal[site]['memcache_host'] = node['nt-deploy']['sites'][site].fetch('memcache_host', node['nt-deploy']['default']['memcache'])
+  drupal[site]['redis_host'] = node['nt-deploy']['sites'][site].fetch('redis_host', node['nt-deploy']['default']['redis'])
+  
+  case node['nt-deploy']['sites'][site].fetch('cache_type', 'none')
+  when 'MemCacheDrupal'
+    cache_settings = <<-EOS
+$conf['memcache_key_prefix'] = '#{drupal[site]['cache_prefix']}';
+$conf['cache_default_class'] = 'MemCacheDrupal';
+$conf['memcache_servers'] = array(
+    '#{drupal[site]['memcache_host']}' => 'default',
+);
+    EOS
+  when 'MemcacheStorage'
+    cache_settings = <<-EOS
+$conf['memcache_extension'] = 'Memcached';
+$conf['memcache_storage_key_prefix'] = '#{drupal[site]['cache_prefix']}';
+$conf['memcache_storage_persistent_connection'] = TRUE;
+$conf['lock_inc'] = 'sites/all/modules/contrib/memcache_storage/includes/lock.inc';
+$conf['session_inc'] = 'sites/all/modules/contrib/memcache_storage/includes/session.inc';
+$conf['cache_backends'][] = 'sites/all/modules/contrib/memcache_storage/memcache_storage.inc';
+$conf['cache_default_class'] = 'MemcacheStorage';
+$conf['cache_backends'][] = 'sites/all/modules/contrib/memcache_storage/memcache_storage.page_cache.inc';
+$conf['cache_class_cache_page'] = 'MemcacheStoragePageCache';
+$conf['memcache_servers'] = array(
+    '#{drupal[site]['memcache_host']}' => 'default',
+);
+    EOS
+  when 'Redis_Cache'
+    cache_settings = <<-EOS
+$conf['redis_client_interface'] = 'PhpRedis';
+$conf['cache_default_class'] = 'Redis_Cache';
+$conf['redis_client_host'] = '#{drupal[site]['redis_host']}';
+$conf['lock_inc'] = 'sites/all/modules/contrib/redis/redis.lock.inc';
+$conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
+    EOS
+  else
+    cache_settings = ''
+  end
+  
   directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files" do
     owner 'apache'
     group 'apache'
@@ -55,8 +94,8 @@ node['nt-deploy']['sites'].each do |site, data|
     only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'drupal_chcon' do
-    command "chcon -R -t httpd_sys_content_t #{drupal[site]['site_path']}/#{site}/drupal"
-    only_if { drupal[site]['site_type'] == "drupal" }
+    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site}/drupal"
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
   
   directory "/media/ephemeral0/tmp/#{site}" do
@@ -68,10 +107,10 @@ node['nt-deploy']['sites'].each do |site, data|
     only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'tmp_chcon' do
-    command "chcon -R -t httpd_sys_content_t media/ephemeral0/tmp/#{site}"
-    only_if { drupal[site]['site_type'] == "drupal" }
+    command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/tmp/#{site}"
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
-  
+  puts drupal[site]['sites_caches']
   template "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php" do
     source "settings.php.erb"
     mode '0440'
@@ -86,7 +125,8 @@ node['nt-deploy']['sites'].each do |site, data|
       :salt => drupal[site]['salt'],
       :elb => drupal[site]['elb'],
       :cache_prefix => drupal[site]['cache_prefix'],
-      :sites_caches => drupal[site]['sites_caches']
+      :sites_caches => drupal[site]['sites_caches'],
+      :cache_settings => cache_settings
     })
     only_if { drupal[site]['site_type'] == "drupal" }
   end
@@ -113,7 +153,7 @@ node['nt-deploy']['sites'].each do |site, data|
     })
     only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/sites/#{drupal[site]['vhost']}/files/composer/composer.lock") && drupal[site]['site_type'] == "drupal" }
   end
-  cron_d 'hourly_cron' do
+  cron_d "hourly_cron_#{site}" do
     minute  0
     command "curl -o /dev/null -sS http://#{drupal[site]['site_dns']}/cron.php?cron_key=#{drupal[site]['cron_key']}"
     user    'apache'
