@@ -10,6 +10,7 @@
 default['nt-deploy']['sites'] = []
 default['nt-deploy']['ssh_dir'] = "~/.ssh"
 default['nt-deploy']['grid_bag'] = "deploy_keys"
+default['nt-deploy']['github'] = ''
 
 default['nt-deploy']['default']['db_host'] = 'localhost'
 default['nt-deploy']['default']['elb'] = '"127.0.0.1"'

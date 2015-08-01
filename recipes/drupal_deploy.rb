@@ -7,6 +7,19 @@
 # All rights reserved - Do Not Redistribute
 #
 
+directory "/root/.composer" do
+  mode '0755'
+  action :create
+end
+template "/root/.composer/auth.json" do
+  source "auth.json.erb"
+  mode '0600'
+  variables ({
+    :token => node['nt-deploy']['github']
+  })
+end
+
+
 drupal = {}
 node['nt-deploy']['sites'].each do |site, data|
   drupal[site] = {}
@@ -126,7 +139,8 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
       :elb => drupal[site]['elb'],
       :cache_prefix => drupal[site]['cache_prefix'],
       :sites_caches => drupal[site]['sites_caches'],
-      :cache_settings => cache_settings
+      :cache_settings => cache_settings,
+      :composer_json_dir => "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer"
     })
     only_if { drupal[site]['site_type'] == "drupal" }
   end
@@ -140,18 +154,31 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     command 'php composer.phar update --no-dev -o'
     only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.lock") && drupal[site]['site_type'] == "drupal" }
   end
-  execute 'drush_composer' do
-    cwd "#{drupal[site]['site_path']}/#{site}/tests"
+  execute 'drush_composer_setup' do
+    cwd "#{drupal[site]['site_path']}/#{site}/drupal"
     command <<-EOM
-    ./bin/drush -y en composer_manager
-    ./bin/drush composer-json-rebuild --no-dev -o
-    php composer.phar update --no-dev -o
+../tests/bin/drush -y en composer_manager --uri=http://#{drupal[site]['site_dns']}
+../tests/bin/drush composer-json-rebuild --uri=http://#{drupal[site]['site_dns']}
+    EOM
+    only_if { drupal[site]['site_type'] == "drupal" }
+  end
+  
+  directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer" do
+    mode '0755'
+    action :create
+    recursive true
+    only_if { drupal[site]['site_type'] == "drupal" }
+  end
+  execute 'drush_composer' do
+    cwd "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer"
+    command <<-EOM
+    php #{drupal[site]['site_path']}/#{site}/tests/composer.phar install --no-dev -o
     EOM
     environment ({
       'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer",
-      'COMPOSER' => "#{drupal[site]['site_path']}/#{site}/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
+      'COMPOSER' => "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
     })
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/sites/#{drupal[site]['vhost']}/files/composer/composer.lock") && drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json") && drupal[site]['site_type'] == "drupal" }
   end
   cron_d "hourly_cron_#{site}" do
     minute  0

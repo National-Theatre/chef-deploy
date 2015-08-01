@@ -30,6 +30,7 @@ end
 
 template "#{node['nt-deploy']['ssh_dir']}/config" do
   source "config.erb"
+  mode '0600'
   variables ({:sites => sites})
 end
 
