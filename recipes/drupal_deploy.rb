@@ -166,10 +166,12 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     })
     only_if { drupal[site]['site_type'] == "drupal" }
   end
-  execute 'run_composer' do
-    cwd "#{drupal[site]['site_path']}/#{site}/tests"
-    command 'php composer.phar install --no-dev -o'
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.lock") || drupal[site]['site_type'] != "drupal" }
+  if File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.phar")
+    execute 'run_composer' do
+      cwd "#{drupal[site]['site_path']}/#{site}/tests"
+      command 'php composer.phar install --no-dev -o'
+      not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.lock") || drupal[site]['site_type'] != "drupal" }
+    end
   end
   execute 'update_composer' do
     cwd "#{drupal[site]['site_path']}/#{site}/tests"
@@ -182,7 +184,7 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
 ../tests/bin/drush -y en composer_manager --uri=http://#{drupal[site]['site_dns']}
 ../tests/bin/drush composer-json-rebuild --uri=http://#{drupal[site]['site_dns']}
     EOM
-    only_if { drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/bin/drush") && drupal[site]['site_type'] == "drupal" }
   end
   
   directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer" do
@@ -200,7 +202,7 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
       'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer",
       'COMPOSER' => "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
     })
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json") && drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json") && drupal[site]['site_type'] == "drupal" }
   end
   cron_d "hourly_cron_#{site}" do
     minute  0

@@ -10,7 +10,7 @@
 keys = data_bag(node['nt-deploy']['grid_bag'])
 
 keys.each do |site|
-  key = data_bag_item('deploy_keys', site)['key']
+  key = data_bag_item(node['nt-deploy']['grid_bag'], site)['key']
   template "#{node['nt-deploy']['ssh_dir']}/#{site}" do
     source "rsa_id.erb"
     mode '0400'
