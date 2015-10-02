@@ -54,6 +54,17 @@ node['nt-deploy']['sites'].each do |site, data|
     recursive true
   end
   
+  execute 'tmp_chcon' do
+    command "chcon -R -t httpd_sys_rw_content_t /media/ephemeral0/tmp/#{site}"
+  end
+  
+  execute 'magento_chown' do
+    command "chown -R apache:apache #{magento[site]['site_path']}/#{site}"
+  end
+  execute 'magento_chcon' do
+    command "chcon -R -t httpd_sys_rw_content_t #{magento[site]['site_path']}/#{site}"
+  end
+  
   template "#{magento[site]['site_path']}/#{site}/magento/app/etc/local.xml" do
     source "local.xml.erb"
     mode '0440'

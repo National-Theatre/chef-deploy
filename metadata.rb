@@ -4,7 +4,7 @@ maintainer_email 'jdrawneek@nationaltheatre.org.uk'
 license          'All rights reserved'
 description      'Installs/Configures nt-deploy'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.2.3'
+version          '0.2.4'
 depends          'ssh_known_hosts'
 depends          'cron'
 depends          'hostsfile'
