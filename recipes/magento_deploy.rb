@@ -44,6 +44,7 @@ node['nt-deploy']['sites'].each do |site, data|
   magento[site]['sites_caches'] = node['nt-deploy']['sites'][site].fetch('sites_caches', [])
   
   magento[site]['site_dns'] = node['nt-deploy']['sites'][site].fetch('site_dns', 'www.example.net')
+  magento[site]['admin_url'] = node['nt-deploy']['sites'][site].fetch('admin_url', 'admin')
   magento[site]['cron_key'] = node['nt-deploy']['sites'][site].fetch('cron_key', 'cron-key')
   
   directory "/media/ephemeral0/tmp/#{site}" do
@@ -71,11 +72,12 @@ node['nt-deploy']['sites'].each do |site, data|
     owner 'apache'
     group 'apache'
     variables ({
-      :db_name => magento[site]['db_name'],
-      :db_user => magento[site]['db_user'],
-      :db_pwd => magento[site]['db_pwd'],
-      :db_host => magento[site]['db_host'],
-      :salt => magento[site]['salt']
+      :db_name   => magento[site]['db_name'],
+      :db_user   => magento[site]['db_user'],
+      :db_pwd    => magento[site]['db_pwd'],
+      :db_host   => magento[site]['db_host'],
+      :salt      => magento[site]['salt'],
+      :admin_url => magento[site]['admin_url']
     })
     only_if { magento[site]['site_type'] == "magento" }
   end
