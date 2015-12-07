@@ -16,6 +16,12 @@ node['nt-deploy']['sites'].each do |site, data|
   magento[site]['site_path'] = node['nt-deploy']['sites'][site].fetch('site_path', '/var/www')
   magento[site]['repo_user'] = node['nt-deploy']['sites'][site].fetch('repo_user', 'git')
   magento[site]['site_type'] = node['nt-deploy']['sites'][site].fetch('site_type', 'magento')
+  
+  execute 'clear_repo_path' do
+    command "rm -rf #{magento[site]['repo_path']}"
+    only_if { ::File.exists("#{magento[site]['repo_path']}/magento/index.html")}
+  end
+  
   execute 'clone_site' do
     command "git clone #{magento[site]['repo_user']}@#{site}:#{magento[site]['repo_path']} #{magento[site]['site_path']}/#{site}"
     not_if { ::File.exists?("#{magento[site]['site_path']}/#{site}") || magento[site]['site_type'] != "magento" }
@@ -64,6 +70,12 @@ node['nt-deploy']['sites'].each do |site, data|
   end
   execute 'magento_chcon' do
     command "chcon -R -t httpd_sys_rw_content_t #{magento[site]['site_path']}/#{site}"
+  end
+  
+  %w{ js skin errors }.each do |path|
+    execute "magento_chcon_#{path}" do
+      command "chcon -R -t httpd_sys_content_t #{magento[site]['site_path']}/#{site}/#{path}"
+    end
   end
   
   template "#{magento[site]['site_path']}/#{site}/magento/app/etc/local.xml" do
