@@ -7,6 +7,11 @@
 # All rights reserved - Do Not Redistribute
 #
 
+selinux_policy_boolean 'httpd_can_network_connect' do
+    value true
+    notifies :restart,'service[httpd]', :delayed
+end
+
 magento = {}
 node['nt-deploy']['sites'].each do |site, data|
   magento[site] = {}
@@ -68,14 +73,21 @@ node['nt-deploy']['sites'].each do |site, data|
   execute 'magento_chown' do
     command "chown -R apache:apache #{magento[site]['site_path']}/#{site}"
   end
-  execute 'magento_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t #{magento[site]['site_path']}/#{site}"
+  
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento(/.*)?" do
+    secontext 'httpd_sys_content_t'
   end
   
-  %w{ js skin errors }.each do |path|
-    execute "magento_chcon_#{path}" do
-      command "chcon -R -t httpd_sys_content_t #{magento[site]['site_path']}/#{site}/#{path}"
-    end
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento(/.*)\.php?" do
+    secontext 'httpd_user_script_exec_t'
+  end
+  
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/media(/.*)?" do
+    secontext 'httpd_sys_rw_content_t'
+  end
+  
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/var(/.*)?" do
+    secontext 'httpd_sys_rw_content_t'
   end
   
   template "#{magento[site]['site_path']}/#{site}/magento/app/etc/local.xml" do
