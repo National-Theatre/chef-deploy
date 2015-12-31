@@ -23,25 +23,26 @@ end
 drupal = {}
 node['nt-deploy']['sites'].each do |site, data|
   drupal[site] = {}
-  drupal[site]['repo_path'] = node['nt-deploy']['sites'][site]['repo_path']
-  drupal[site]['repo_tag'] = node['nt-deploy']['sites'][site].fetch('repo_tag', false)
+  drupal[site]['repo_path']   = node['nt-deploy']['sites'][site]['repo_path']
+  drupal[site]['repo_tag']    = node['nt-deploy']['sites'][site].fetch('repo_tag', false)
   drupal[site]['repo_branch'] = node['nt-deploy']['sites'][site].fetch('repo_branch', 'develop')
-  drupal[site]['site_path'] = node['nt-deploy']['sites'][site].fetch('site_path', '/var/www')
-  drupal[site]['repo_user'] = node['nt-deploy']['sites'][site].fetch('repo_user', 'git')
-  drupal[site]['site_type'] = node['nt-deploy']['sites'][site].fetch('site_type', 'drupal')
+  drupal[site]['site_path']   = node['nt-deploy']['sites'][site].fetch('site_path', '/var/www')
+  drupal[site]['repo_user']   = node['nt-deploy']['sites'][site].fetch('repo_user', 'git')
+  drupal[site]['site_type']   = node['nt-deploy']['sites'][site].fetch('site_type', 'drupal')
+  site_label                  = node['nt-deploy']['sites'][site].fetch('site_label', site)
   execute 'clone_site' do
-    command "git clone #{drupal[site]['repo_user']}@#{site}:#{drupal[site]['repo_path']} #{drupal[site]['site_path']}/#{site}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}") || drupal[site]['site_type'] != "drupal" }
+    command "git clone #{drupal[site]['repo_user']}@#{site}:#{drupal[site]['repo_path']} #{drupal[site]['site_path']}/#{site_label}"
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}") || drupal[site]['site_type'] != "drupal" }
   end
   
   execute 'checkout_branch' do
-    cwd "#{drupal[site]['site_path']}/#{site}"
+    cwd "#{drupal[site]['site_path']}/#{site_label}"
     command "git checkout -b #{drupal[site]['repo_branch']} origin/#{drupal[site]['repo_branch']}; git pull"
     only_if { drupal[site]['site_type'] == "drupal" && drupal[site]['repo_tag'] == false }
   end
   
   execute 'checkout_branch' do
-    cwd "#{drupal[site]['site_path']}/#{site}"
+    cwd "#{drupal[site]['site_path']}/#{site_label}"
     command "git fetch origin; git checkout -b #{drupal[site]['repo_tag']} tags/#{drupal[site]['repo_tag']}"
     only_if { drupal[site]['repo_tag'] }
   end
@@ -98,13 +99,13 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     cache_settings = ''
   end
   
-  directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}" do
+  directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}" do
     mode '0755'
     action :create
     recursive true
     only_if { drupal[site]['site_type'] == "drupal" }
   end
-  directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files" do
+  directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files" do
     owner 'apache'
     group 'apache'
     mode '0755'
@@ -113,11 +114,11 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
     only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'drupal_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site}/drupal"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site_label}/drupal"
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
   execute 'drupal_files_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files"
+    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files"
     only_if { drupal[site]['site_type'] == "drupal" }
   end
   
@@ -131,7 +132,7 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
   end
   execute 'tmp_chcon' do
     command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/tmp/#{site}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
   directory "/media/ephemeral0/private/#{site}" do
     owner 'apache'
@@ -143,10 +144,10 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
   end
   execute 'tmp_chcon' do
     command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/private/#{site}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
 
-  template "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/settings.php" do
+  template "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php" do
     source "settings.php.erb"
     mode '0440'
     owner 'apache'
@@ -162,47 +163,48 @@ $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
       :cache_prefix => drupal[site]['cache_prefix'],
       :sites_caches => drupal[site]['sites_caches'],
       :cache_settings => cache_settings,
-      :composer_json_dir => "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer"
+      :composer_json_dir => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer",
+      :composer_vendor_dir => 'composer_vendor_dir'
     })
     only_if { drupal[site]['site_type'] == "drupal" }
   end
-  if File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.phar")
+  if File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar")
     execute 'run_composer' do
-      cwd "#{drupal[site]['site_path']}/#{site}/tests"
+      cwd "#{drupal[site]['site_path']}/#{site_label}/tests"
       command 'php composer.phar install --no-dev -o'
-      not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.lock") || drupal[site]['site_type'] != "drupal" }
+      not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.lock") || drupal[site]['site_type'] != "drupal" }
     end
   end
   execute 'update_composer' do
-    cwd "#{drupal[site]['site_path']}/#{site}/tests"
+    cwd "#{drupal[site]['site_path']}/#{site_label}/tests"
     command 'php composer.phar update --no-dev -o'
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.lock") && drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.lock") && drupal[site]['site_type'] == "drupal" }
   end
   execute 'drush_composer_setup' do
-    cwd "#{drupal[site]['site_path']}/#{site}/drupal"
+    cwd "#{drupal[site]['site_path']}/#{site_label}/drupal"
     command <<-EOM
 ../tests/bin/drush -y en composer_manager --uri=http://#{drupal[site]['site_dns']}
 ../tests/bin/drush composer-json-rebuild --uri=http://#{drupal[site]['site_dns']}
     EOM
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/bin/drush") && drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/bin/drush") && drupal[site]['site_type'] == "drupal" }
   end
   
-  directory "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer" do
+  directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer" do
     mode '0755'
     action :create
     recursive true
     only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'drush_composer' do
-    cwd "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer"
+    cwd "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer"
     command <<-EOM
-    php #{drupal[site]['site_path']}/#{site}/tests/composer.phar install --no-dev -o
+    php #{drupal[site]['site_path']}/#{site_label}/tests/composer.phar install --no-dev -o
     EOM
     environment ({
-      'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site}/drupal/sites/all/libraries/composer",
-      'COMPOSER' => "#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
+      'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer",
+      'COMPOSER' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
     })
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json") && drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json") && drupal[site]['site_type'] == "drupal" }
   end
   cron_d "hourly_cron_#{site}" do
     minute  0
