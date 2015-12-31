@@ -71,6 +71,8 @@ $conf['cache_default_class'] = 'MemCacheDrupal';
 $conf['memcache_servers'] = array(
     '#{drupal[site]['memcache_host']}' => 'default',
 );
+$conf['page_cache_without_database'] = TRUE;
+$conf['page_cache_invoke_hooks'] = FALSE;
     EOS
   when 'MemcacheStorage'
     cache_settings = <<-EOS
@@ -86,6 +88,8 @@ $conf['cache_class_cache_page'] = 'MemcacheStoragePageCache';
 $conf['memcache_servers'] = array(
     '#{drupal[site]['memcache_host']}' => 'default',
 );
+$conf['page_cache_without_database'] = TRUE;
+$conf['page_cache_invoke_hooks'] = FALSE;
     EOS
   when 'Redis_Cache'
     cache_settings = <<-EOS
@@ -94,6 +98,8 @@ $conf['cache_default_class'] = 'Redis_Cache';
 $conf['redis_client_host'] = '#{drupal[site]['redis_host']}';
 $conf['lock_inc'] = 'sites/all/modules/contrib/redis/redis.lock.inc';
 $conf['path_inc'] = 'sites/all/modules/contrib/redis/redis.path.inc';
+$conf['page_cache_without_database'] = TRUE;
+$conf['page_cache_invoke_hooks'] = FALSE;
     EOS
   else
     cache_settings = ''
