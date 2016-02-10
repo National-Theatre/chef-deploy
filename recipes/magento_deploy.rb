@@ -7,6 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
+service "httpd" do
+  action :nothing
+end
+
 selinux_policy_boolean 'httpd_can_network_connect' do
     value true
     notifies :restart,'service[httpd]', :delayed
@@ -24,7 +28,7 @@ node['nt-deploy']['sites'].each do |site, data|
   
   execute 'clear_repo_path' do
     command "rm -rf #{magento[site]['repo_path']}"
-    only_if { ::File.exists("#{magento[site]['repo_path']}/magento/index.html")}
+    only_if { ::File.exists?("#{magento[site]['repo_path']}/magento/index.html")}
   end
   
   execute 'clone_site' do
