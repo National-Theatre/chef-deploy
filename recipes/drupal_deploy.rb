@@ -170,7 +170,7 @@ $conf['page_cache_invoke_hooks'] = FALSE;
       :sites_caches => drupal[site]['sites_caches'],
       :cache_settings => cache_settings,
       :composer_json_dir => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer",
-      :composer_vendor_dir => 'composer_vendor_dir'
+      :composer_vendor_dir => 'sites/all/libraries/composer'
     })
     only_if { drupal[site]['site_type'] == "drupal" }
   end
@@ -186,14 +186,14 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     command 'php composer.phar update --no-dev -o'
     only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.lock") && drupal[site]['site_type'] == "drupal" }
   end
-  execute 'drush_composer_setup' do
-    cwd "#{drupal[site]['site_path']}/#{site_label}/drupal"
-    command <<-EOM
-../tests/bin/drush -y en composer_manager --uri=http://#{drupal[site]['site_dns']}
-../tests/bin/drush composer-json-rebuild --uri=http://#{drupal[site]['site_dns']}
-    EOM
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/bin/drush") && drupal[site]['site_type'] == "drupal" }
-  end
+#  execute 'drush_composer_setup' do
+#    cwd "#{drupal[site]['site_path']}/#{site_label}/drupal"
+#    command <<-EOM
+#../tests/bin/drush -y en composer_manager --uri=http://#{drupal[site]['site_dns']}
+#../tests/bin/drush composer-json-rebuild --uri=http://#{drupal[site]['site_dns']}
+#    EOM
+#    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/bin/drush") && drupal[site]['site_type'] == "drupal" }
+#  end
   
   directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer" do
     mode '0755'
@@ -208,9 +208,10 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     EOM
     environment ({
       'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer",
-      'COMPOSER' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
+      'COMPOSER' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer.json"
     })
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer/composer.json") && drupal[site]['site_type'] == "drupal" }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer.json") && drupal[site]['site_type'] == "drupal" }
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer/autoload.php") }
   end
   cron_d "hourly_cron_#{site}" do
     minute  0
