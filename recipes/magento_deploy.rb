@@ -74,10 +74,6 @@ node['nt-deploy']['sites'].each do |site, data|
     command "chcon -R -t httpd_sys_rw_content_t /media/ephemeral0/tmp/#{site}"
   end
   
-  execute 'magento_chown' do
-    command "chown -R apache:apache #{magento[site]['site_path']}/#{site}"
-  end
-  
   selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento(/.*)?" do
     secontext 'httpd_sys_content_t'
   end
@@ -92,6 +88,24 @@ node['nt-deploy']['sites'].each do |site, data|
   
   selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/var(/.*)?" do
     secontext 'httpd_sys_rw_content_t'
+  end
+  
+  %w{app dev downloader downloaderntmgt errors includes js lib newslettersucess pkginfo shell skin var}.each do |folder|
+    directory "#{magento[site]['site_path']}/#{site}/magento/#{folder}" do
+      owner 'apache'
+      group 'apache'
+      mode '0755'
+      recursive true
+      action :create
+    end
+  end
+  Dir.foreach("#{magento[site]['site_path']}/#{site}/magento") do |item|
+    next if item == '.' or item == '..' or File.directory?("#{magento[site]['site_path']}/#{site}/magento/#{item}")
+    file "#{magento[site]['site_path']}/#{site}/magento/#{item}" do
+      mode '0644'
+      owner 'apache'
+      group 'apache'
+    end
   end
   
   template "#{magento[site]['site_path']}/#{site}/magento/app/etc/local.xml" do
