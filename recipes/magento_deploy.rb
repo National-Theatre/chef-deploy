@@ -27,8 +27,9 @@ node['nt-deploy']['sites'].each do |site, data|
   magento[site]['site_type'] = node['nt-deploy']['sites'][site].fetch('site_type', 'magento')
   
   execute 'clear_repo_path' do
-    command "rm -rf #{magento[site]['repo_path']}"
-    only_if { ::File.exists?("#{magento[site]['repo_path']}/magento/index.html")}
+    command "rm -rf #{magento[site]['site_path']}/#{site}"
+    only_if { ::File.exists?("#{magento[site]['site_path']}/#{site}/magento/index.html")}
+    not_if {::File.exists?("#{magento[site]['site_path']}/#{site}/.git")}
   end
   
   execute 'clone_site' do
