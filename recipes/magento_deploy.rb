@@ -91,6 +91,10 @@ node['nt-deploy']['sites'].each do |site, data|
     secontext 'httpd_sys_rw_content_t'
   end
   
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/xmlfile.xml" do
+    secontext 'httpd_sys_rw_content_t'
+  end
+  
   %w{app dev downloader downloaderntmgt errors includes js lib newslettersucess pkginfo shell skin var}.each do |folder|
     directory "#{magento[site]['site_path']}/#{site}/magento/#{folder}" do
       owner 'apache'
