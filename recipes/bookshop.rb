@@ -14,3 +14,8 @@ mount 'bucket' do
     action [:enable, :mount]
     options "_netdev,allow_other,nonempty,iam_role=#{node['iam_role']}"
 end
+
+selinux_policy_boolean 'httpd_use_fusefs' do
+    value true
+    notifies :restart,'service[httpd]', :delayed
+end
