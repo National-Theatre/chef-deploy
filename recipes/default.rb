@@ -41,3 +41,11 @@ allow httpd_t var_log_t:file open;
   eos
   action :deploy
 end
+
+file '/etc/httpd/modsecurity.d/activated_rules/pentest.conf' do
+  content 'SecServerSignature Magic'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  notifies :restart,'service[httpd]', :delayed
+end
