@@ -21,9 +21,11 @@ cookbook_file '/etc/httpd/drupal_htaccess.ini' do
   group 'apache'
 end
 
-selinux_policy_module 'newrelic-daemon' do
+package 'selinux-policy-devel'
+
+selinux_policy_module 'newrelic-daemon2' do
   content <<-eos
-module newrelic-daemon 1.0;
+module newrelic-daemon2 1.0;
 
 require {
         type httpd_t;

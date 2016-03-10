@@ -81,9 +81,10 @@ node['nt-deploy']['sites'].each do |site, data|
       :username => node['nt-deploy']['mysql']['initial_user'],
       :password => node['nt-deploy']['mysql']['initial_root_password']
     )
-    password drupal[site]['db_pwd']
+    password      drupal[site]['db_pwd']
     database_name drupal[site]['db_name']
-    action :create
+    host          '%'
+    action [:create, :grant]
   end
   
   case node['nt-deploy']['sites'][site].fetch('cache_type', 'none')
