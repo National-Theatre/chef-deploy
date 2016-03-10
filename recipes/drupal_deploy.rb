@@ -19,6 +19,9 @@ template "/root/.composer/auth.json" do
   })
 end
 
+mysql2_chef_gem 'default' do
+  action :install
+end
 
 drupal = {}
 node['nt-deploy']['sites'].each do |site, data|
@@ -62,6 +65,26 @@ node['nt-deploy']['sites'].each do |site, data|
   
   drupal[site]['memcache_host'] = node['nt-deploy']['sites'][site].fetch('memcache_host', node['nt-deploy']['default']['memcache'])
   drupal[site]['redis_host'] = node['nt-deploy']['sites'][site].fetch('redis_host', node['nt-deploy']['default']['redis'])
+  
+  mysql_database drupal[site]['db_name'] do
+    connection(
+      :host     => drupal[site]['db_host'],
+      :username => node['nt-deploy']['mysql']['initial_user'],
+      :password => node['nt-deploy']['mysql']['initial_root_password']
+    )
+    action :create
+  end
+  
+  mysql_database_user drupal[site]['db_user'] do
+    connection(
+      :host     => drupal[site]['db_host'],
+      :username => node['nt-deploy']['mysql']['initial_user'],
+      :password => node['nt-deploy']['mysql']['initial_root_password']
+    )
+    password drupal[site]['db_pwd']
+    database_name drupal[site]['db_name']
+    action :create
+  end
   
   case node['nt-deploy']['sites'][site].fetch('cache_type', 'none')
   when 'MemCacheDrupal'
