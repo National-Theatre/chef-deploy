@@ -26,18 +26,18 @@ end
 keys = data_bag('drupal_stg')
 
 nt_deploy "stg_linburyprize" do
-    site_label: 'NTMicrosites'
-    repo_key: '/root/.ssh/nt-web-hosting'
-    repo_site: 'github.com'
-    repo_path: 'National-Theatre/NT-Web-Hosting.git'
-    repo_branch: 'master'
-    site_dns: 'linburyprize.cms.ntstaging.org'
-    vhost: 'linburyprize'
-    db_user: 'linburyprize'
-    db_pwd: data_bag_item('drupal_stg', 'linburyprize')['pwd']
-    cache_prefix: 'stg_lby_'
-    salt: data_bag_item('drupal_stg', 'linburyprize')['salt']
-    cron_key: data_bag_item('drupal_stg', 'linburyprize')['cron']
-    cache_type: 'Redis_Cache'
-    sites_caches: ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_label 'NTMicrosites'
+    repo_key '/root/.ssh/nt-web-hosting'
+    repo_site 'github.com'
+    repo_path 'National-Theatre/NT-Web-Hosting.git'
+    repo_branch 'master'
+    site_dn 'linburyprize.cms.ntstaging.org'
+    vhost 'linburyprize'
+    db_user 'linburyprize'
+    db_pwd data_bag_item('drupal_stg', 'linburyprize')['pwd']
+    cache_prefix 'stg_lby_'
+    salt data_bag_item('drupal_stg', 'linburyprize')['salt']
+    cron_key data_bag_item('drupal_stg', 'linburyprize')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
 end

@@ -9,7 +9,7 @@ action :create do
   drupal[site]['site_path']   = new_resource.site_path
   drupal[site]['repo_user']   = new_resource.repo_user
   drupal[site]['site_type']   = new_resource.site_type
-  site_label                  = new_resource.site_label.nil? site : new_resource.site_label
+  site_label                  = new_resource.site_label.nil? ? site : new_resource.site_label
   execute 'clone_site' do
     command "git clone #{drupal[site]['repo_user']}@#{site}:#{drupal[site]['repo_path']} #{drupal[site]['site_path']}/#{site_label}"
     not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}") || drupal[site]['site_type'] != "drupal" }
@@ -28,20 +28,20 @@ action :create do
   end
   
   drupal[site]['vhost'] = new_resource.vhost
-  drupal[site]['db_name'] = new_resource.db_name.nil? "drupal_#{site}" : new_resource.db_name
-  drupal[site]['db_user'] = new_resource.db_user.nil? site : new_resource.db_user
-  drupal[site]['db_pwd'] = new_resource.db_pwd.nil? site : new_resource.db_pwd
-  drupal[site]['db_host'] = new_resource.db_host.nil? node['nt-deploy']['default']['db_host'] : new_resource.db_host
-  drupal[site]['elb'] = new_resource.elb.nil? node['nt-deploy']['default']['elb'] : new_resource.elb
+  drupal[site]['db_name'] = new_resource.db_name.nil? ? "drupal_#{site}" : new_resource.db_name
+  drupal[site]['db_user'] = new_resource.db_user.nil? ? site : new_resource.db_user
+  drupal[site]['db_pwd'] = new_resource.db_pwd.nil? ? site : new_resource.db_pwd
+  drupal[site]['db_host'] = new_resource.db_host.nil? ? node['nt-deploy']['default']['db_host'] : new_resource.db_host
+  drupal[site]['elb'] = new_resource.elb.nil? ? node['nt-deploy']['default']['elb'] : new_resource.elb
   drupal[site]['salt'] = new_resource.salt
-  drupal[site]['cache_prefix'] = new_resource.cache_prefix.nil? "#{site}_" : new_resource.cache_prefix
+  drupal[site]['cache_prefix'] = new_resource.cache_prefix.nil ? "#{site}_" : new_resource.cache_prefix
   drupal[site]['sites_caches'] = new_resource.sites_caches
   
   drupal[site]['site_dns'] = new_resource.site_dns
   drupal[site]['cron_key'] = new_resource.cron_key
   
-  drupal[site]['memcache_host'] = new_resource.memcache_host.nil? node['nt-deploy']['default']['memcache'] : new_resource.memcache_host
-  drupal[site]['redis_host'] = new_resource.redis_host.nil? node['nt-deploy']['default']['redis'] : new_resource.redis_host
+  drupal[site]['memcache_host'] = new_resource.memcache_host.nil ? node['nt-deploy']['default']['memcache'] : new_resource.memcache_host
+  drupal[site]['redis_host'] = new_resource.redis_host.nil ? node['nt-deploy']['default']['redis'] : new_resource.redis_host
   
   mysql_database drupal[site]['db_name'] do
     connection(
