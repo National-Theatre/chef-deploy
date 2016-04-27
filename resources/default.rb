@@ -9,6 +9,7 @@ attribute :repo_user, :kind_of => String, :default => 'git'
 attribute :site_type, :kind_of => String, :default => 'drupal'
 attribute :site_label, :kind_of => String, :default => nil
 
+attribute :drupal_root, :kind_of => String, :default => 'drupal'
 attribute :vhost, :kind_of => String, :default => 'default'
 attribute :db_name, :kind_of => String, :default => nil
 attribute :db_user, :kind_of => String, :default => nil

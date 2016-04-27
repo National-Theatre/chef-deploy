@@ -34,14 +34,14 @@ action :create do
   drupal[site]['db_host'] = new_resource.db_host.nil? ? node['nt-deploy']['default']['db_host'] : new_resource.db_host
   drupal[site]['elb'] = new_resource.elb.nil? ? node['nt-deploy']['default']['elb'] : new_resource.elb
   drupal[site]['salt'] = new_resource.salt
-  drupal[site]['cache_prefix'] = new_resource.cache_prefix.nil ? "#{site}_" : new_resource.cache_prefix
+  drupal[site]['cache_prefix'] = new_resource.cache_prefix.nil? ? "#{site}_" : new_resource.cache_prefix
   drupal[site]['sites_caches'] = new_resource.sites_caches
   
   drupal[site]['site_dns'] = new_resource.site_dns
   drupal[site]['cron_key'] = new_resource.cron_key
   
-  drupal[site]['memcache_host'] = new_resource.memcache_host.nil ? node['nt-deploy']['default']['memcache'] : new_resource.memcache_host
-  drupal[site]['redis_host'] = new_resource.redis_host.nil ? node['nt-deploy']['default']['redis'] : new_resource.redis_host
+  drupal[site]['memcache_host'] = new_resource.memcache_host.nil? ? node['nt-deploy']['default']['memcache'] : new_resource.memcache_host
+  drupal[site]['redis_host'] = new_resource.redis_host.nil? ? node['nt-deploy']['default']['redis'] : new_resource.redis_host
   
   mysql_database drupal[site]['db_name'] do
     connection(
@@ -106,27 +106,25 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     cache_settings = ''
   end
   
-  directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}" do
+  directory "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}" do
     mode '0755'
     action :create
     recursive true
-    only_if { drupal[site]['site_type'] == "drupal" }
   end
-  directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files" do
+  directory "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files" do
     owner 'apache'
     group 'apache'
     mode '0755'
     action :create
     recursive true
-    only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'drupal_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site_label}/drupal"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}"
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
-  execute 'drupal_files_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files"
-    only_if { drupal[site]['site_type'] == "drupal" }
+  
+  selinux_policy_fcontext "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files(/.*)?" do
+    secontext 'httpd_sys_rw_content_t'
   end
   
   directory "/media/ephemeral0/tmp/#{site}" do
@@ -137,24 +135,23 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     recursive true
     only_if { drupal[site]['site_type'] == "drupal" }
   end
-  execute 'tmp_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/tmp/#{site}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+  selinux_policy_fcontext "/media/ephemeral0/tmp/#{site}(/.*)?" do
+    secontext 'httpd_sys_rw_content_t'
   end
+
   directory "/media/ephemeral0/private/#{site}" do
     owner 'apache'
     group 'apache'
     mode '0755'
     action :create
     recursive true
-    only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'tmp_chcon' do
     command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/private/#{site}"
     not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
   end
 
-  template "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php" do
+  template "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/settings.php" do
     source "settings.php.erb"
     mode '0440'
     owner 'apache'
@@ -170,12 +167,11 @@ $conf['page_cache_invoke_hooks'] = FALSE;
       :cache_prefix => drupal[site]['cache_prefix'],
       :sites_caches => drupal[site]['sites_caches'],
       :cache_settings => cache_settings,
-      :composer_json_dir => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer",
+      :composer_json_dir => "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files/composer",
       :composer_vendor_dir => 'sites/all/libraries/composer'
     })
-    only_if { drupal[site]['site_type'] == "drupal" }
   end
-  if File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar")
+  if ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar")
     execute 'run_composer' do
       cwd "#{drupal[site]['site_path']}/#{site_label}/tests"
       command 'php composer.phar install --no-dev -o'
@@ -188,29 +184,27 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.lock") && drupal[site]['site_type'] == "drupal" }
   end
   
-  directory "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer" do
+  directory "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer" do
     mode '0755'
     action :create
     recursive true
-    only_if { drupal[site]['site_type'] == "drupal" }
   end
   execute 'drush_composer' do
-    cwd "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer"
+    cwd "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer"
     command <<-EOM
     php #{drupal[site]['site_path']}/#{site_label}/tests/composer.phar install --no-dev -o
     EOM
     environment ({
-      'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer",
-      'COMPOSER' => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer.json"
+      'COMPOSER_VENDOR_DIR' => "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer",
+      'COMPOSER' => "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer.json"
     })
-    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer.json") && drupal[site]['site_type'] == "drupal" }
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/all/libraries/composer/autoload.php") }
+    only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer.json") && drupal[site]['site_type'] == "drupal" }
+    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer/autoload.php") }
   end
   cron_d "hourly_cron_#{site}" do
     minute  0
     command "curl -o /dev/null -sS http://#{drupal[site]['site_dns']}/cron.php?cron_key=#{drupal[site]['cron_key']}"
     user    'apache'
-    only_if { drupal[site]['site_type'] == "drupal" }
   end
   hostsfile_entry '127.0.0.1' do
     hostname  drupal[site]['site_dns']
