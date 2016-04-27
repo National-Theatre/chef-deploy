@@ -1,24 +1,5 @@
-#
-# Cookbook Name:: nt-deploy
-# Recipe:: magento_deploy
-#
-# Copyright 2015, National Theatre
-#
-# All rights reserved - Do Not Redistribute
-#
 
-service "httpd" do
-  action :nothing
-end
-
-selinux_policy_boolean 'httpd_can_network_connect' do
-    value true
-    notifies :restart,'service[httpd]', :delayed
-end
-
-magento = {}
-node['nt-deploy']['sites'].each do |site, data|
-  magento[site] = {}
+action :create do
   magento[site]['repo_path'] = node['nt-deploy']['sites'][site]['repo_path']
   magento[site]['repo_tag'] = node['nt-deploy']['sites'][site].fetch('repo_tag', false)
   magento[site]['repo_branch'] = node['nt-deploy']['sites'][site].fetch('repo_branch', 'develop')
@@ -34,19 +15,16 @@ node['nt-deploy']['sites'].each do |site, data|
   
   execute 'clone_site' do
     command "git clone #{magento[site]['repo_user']}@#{site}:#{magento[site]['repo_path']} #{magento[site]['site_path']}/#{site}"
-    not_if { ::File.exists?("#{magento[site]['site_path']}/#{site}") || magento[site]['site_type'] != "magento" }
   end
   
   execute 'checkout_branch' do
     cwd "#{magento[site]['site_path']}/#{site}"
     command "git checkout -b #{magento[site]['repo_branch']} origin/#{magento[site]['repo_branch']}; git pull"
-    only_if { magento[site]['site_type'] == "magento" && magento[site]['repo_tag'] == false }
   end
   
   execute 'checkout_branch' do
     cwd "#{magento[site]['site_path']}/#{site}"
     command "git fetch origin; git checkout -b #{magento[site]['repo_tag']} tags/#{magento[site]['repo_tag']}"
-    only_if { magento[site]['repo_tag'] }
   end
   
   magento[site]['vhost'] = node['nt-deploy']['sites'][site].fetch('vhost', 'default')
@@ -126,7 +104,5 @@ node['nt-deploy']['sites'].each do |site, data|
       :salt      => magento[site]['salt'],
       :admin_url => magento[site]['admin_url']
     })
-    only_if { magento[site]['site_type'] == "magento" }
   end
-
 end
