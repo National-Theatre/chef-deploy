@@ -7,15 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
-cookbook_file '/usr/lib/systemd/system/newrelic-plugin.service' do
-  source 'newrelic-plugin.service'
-  owner 'root'
-  group 'root'
-  mode '0644'
-  action :create
-end
-
-service "newrelic-plugin" do
+service "newrelic-plugin-agent" do
   action :enable
 end
 
@@ -49,6 +41,6 @@ template "/etc/newrelic/newrelic-plugin-agent.cfg" do
       :key   => node['newrelic']['license'],
       :name   => node['instance_name']
     })
-    notifies :start, 'service[newrelic-plugin]', :immediately
-    notifies :restart, 'service[newrelic-plugin]', :delayed
+    notifies :start, 'service[newrelic-plugin-agent]', :immediately
+    notifies :restart, 'servicenewrelic-plugin-agent]', :delayed
 end
