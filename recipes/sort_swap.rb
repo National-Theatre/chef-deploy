@@ -10,7 +10,7 @@
 if (::File.exists?("/swap.img") == false)
   Chef::Log.info("Swapfile not found. Manually creating one of 512M for OOM safety")
   execute "creating swapfile" do
-    command "/bin/dd if=/dev/zero of=/swap.img bs=1M count=512"
+    command "/bin/dd if=/dev/zero of=/swap.img bs=1M count=#{node['nt-deploy']['swap_mem_size']}"
     action :run
     creates "/swap.img"
   end
