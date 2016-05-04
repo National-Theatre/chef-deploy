@@ -50,7 +50,7 @@ template "/etc/newrelic/newrelic-plugin-agent.cfg" do
       :name   => node['instance_name']
     })
     notifies :start, 'service[newrelic-plugin-agent]', :immediately
-    notifies :restart, 'servicenewrelic-plugin-agent]', :delayed
+    notifies :restart, 'service[newrelic-plugin-agent]', :delayed
 end
 
 template "/etc/newrelic/newrelic-phpopcache.ini" do
