@@ -67,5 +67,5 @@ end
 
 cron_d "newrelic_opcache" do
     command "curl http://127.0.0.1/newrelic-phpopcache.php 2&>1 > /dev/null"
-    user    'apache'
+    user    'ec2-user'
 end
