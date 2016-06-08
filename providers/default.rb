@@ -10,21 +10,23 @@ action :create do
   drupal[site]['repo_user']   = new_resource.repo_user
   drupal[site]['site_type']   = new_resource.site_type
   site_label                  = new_resource.site_label.nil? ? site : new_resource.site_label
-  execute 'clone_site' do
-    command "git clone #{drupal[site]['repo_user']}@#{site}:#{drupal[site]['repo_path']} #{drupal[site]['site_path']}/#{site_label}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}") || drupal[site]['site_type'] != "drupal" }
-  end
+  unless new_resource.use_bundle
+    execute 'clone_site' do
+        command "git clone #{drupal[site]['repo_user']}@#{site}:#{drupal[site]['repo_path']} #{drupal[site]['site_path']}/#{site_label}"
+        not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}") || drupal[site]['site_type'] != "drupal" }
+    end
   
-  execute 'checkout_branch' do
-    cwd "#{drupal[site]['site_path']}/#{site_label}"
-    command "git checkout -b #{drupal[site]['repo_branch']} origin/#{drupal[site]['repo_branch']}; git pull"
-    only_if { drupal[site]['site_type'] == "drupal" && drupal[site]['repo_tag'] == false }
-  end
+    execute 'checkout_branch' do
+        cwd "#{drupal[site]['site_path']}/#{site_label}"
+        command "git checkout -b #{drupal[site]['repo_branch']} origin/#{drupal[site]['repo_branch']}; git pull"
+        only_if { drupal[site]['site_type'] == "drupal" && drupal[site]['repo_tag'] == false }
+    end
   
-  execute 'checkout_branch' do
-    cwd "#{drupal[site]['site_path']}/#{site_label}"
-    command "git fetch origin; git checkout -b #{drupal[site]['repo_tag']} tags/#{drupal[site]['repo_tag']}"
-    only_if { drupal[site]['repo_tag'] }
+    execute 'checkout_branch' do
+        cwd "#{drupal[site]['site_path']}/#{site_label}"
+        command "git fetch origin; git checkout -b #{drupal[site]['repo_tag']} tags/#{drupal[site]['repo_tag']}"
+        only_if { drupal[site]['repo_tag'] }
+    end
   end
   
   drupal[site]['vhost'] = new_resource.vhost

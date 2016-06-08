@@ -3,6 +3,7 @@ default_action(:create)
 attribute :site, :kind_of => String, :name_attribute => true
 attribute :repo_path, :kind_of => String
 attribute :repo_tag, :kind_of => [TrueClass, FalseClass], :default => false
+attribute :use_bundle, :kind_of => [TrueClass, FalseClass], :default => false
 attribute :repo_branch, :kind_of => String, :default => 'develop'
 attribute :site_path, :kind_of => String, :default => '/var/www'
 attribute :repo_user, :kind_of => String, :default => 'git'

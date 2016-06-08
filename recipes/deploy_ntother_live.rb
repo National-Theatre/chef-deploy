@@ -23,12 +23,14 @@ mysql2_chef_gem 'default' do
   action :install
 end
 
-directory '/mnt/data-store/NTOther' do
+directory '/mnt/data-store/NTMicrosites' do
   owner 'apache'
   group 'apache'
   mode  '0755'
   action :create
 end
+
+package 'unzip'
 
 execute 'unzip_code' do
   cwd     '/mnt/data-store'
@@ -38,10 +40,10 @@ end
 
 include_recipe 's3_file::dependencies'
 
-s3_file "/mnt/data-store/NTOther/NTOtherDrupal.zip" do
-    remote_path "/NTOtherDrupal/v1.0.0.zip"
-    bucket "my-s3-bucket"
-    s3_url "https://s3-eu-west-1.amazonaws.com/bucket"
+s3_file "/mnt/data-store/NTMicrosites/NTOtherDrupal.zip" do
+    remote_path "/NTOtherDrupal/v2.0.0.zip"
+    bucket "live-codeartifacts"
+    s3_url "https://s3-eu-west-1.amazonaws.com/live-codeartifacts"
     mode "0644"
     action :create
     notifies :run, 'execute[unzip_code]', :immediately
@@ -51,8 +53,7 @@ keys = data_bag('ntother_live')
 
 nt_deploy "linburyprize" do
     site_label 'NTMicrosites'
-    repo_path 'National-Theatre/NT-Web-Hosting.git'
-    repo_branch 'master'
+    use_bundle true
     site_dns 'linburyprize.cms.nationaltheatre.org.uk'
     vhost 'linburyprize'
     db_user 'linburyprize'
@@ -66,8 +67,7 @@ end
 
 nt_deploy "newviews" do
     site_label 'NTMicrosites'
-    repo_path 'National-Theatre/NT-Web-Hosting.git'
-    repo_branch 'master'
+    use_bundle true
     site_dns 'new-views.cms.nationaltheatre.org.uk'
     vhost 'newviews'
     db_user 'newviews'
@@ -81,8 +81,7 @@ end
 
 nt_deploy "ntfuture" do
     site_label 'NTMicrosites'
-    repo_path 'National-Theatre/NT-Web-Hosting.git'
-    repo_branch 'master'
+    use_bundle true
     site_dns 'ntfuture.cms.nationaltheatre.org.uk'
     vhost 'ntfuture'
     db_user 'ntfuture'
@@ -96,8 +95,7 @@ end
 
 nt_deploy "allabouttheatre" do
     site_label 'NTMicrosites'
-    repo_path 'National-Theatre/NT-Web-Hosting.git'
-    repo_branch 'master'
+    use_bundle true
     site_dns 'allabouttheatre.cms.nationaltheatre.org.uk'
     vhost 'allabouttheatre'
     db_user 'allabouttheatre'
