@@ -155,7 +155,7 @@ node['nt-deploy']['sites'].each do |site, data|
   
   cron_d "magento_cron_#{site}" do
     command "/bin/sh #{magento[site]['site_path']}/#{site}/magento/cron.sh"
-    user    'apache'
+    user    'ec2-user'
   end
 
 end
