@@ -20,3 +20,13 @@ selinux_policy_boolean 'httpd_use_fusefs' do
     notifies :restart,'service[httpd]', :delayed
 end
 
+%w{Aitoc_Aitreports.xml Aitoc_Common.xml Aitoc_Aitinstall.xml}.each do |folder|
+    file "/var/www/bookshop/magento/app/etc/modules/#{folder}" do
+      owner 'apache'
+      group 'apache'
+      mode '0664'
+    end
+    selinux_policy_fcontext "/var/www/bookshop/magento/app/etc/modules/#{folder}" do
+      secontext 'httpd_sys_rw_content_t'
+    end
+end

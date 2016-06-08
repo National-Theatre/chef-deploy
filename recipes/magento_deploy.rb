@@ -91,6 +91,10 @@ node['nt-deploy']['sites'].each do |site, data|
     secontext 'httpd_sys_rw_content_t'
   end
   
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/includes/config\.php?" do
+    secontext 'httpd_sys_rw_content_t'
+  end
+  
   selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/var(/.*)?" do
     secontext 'httpd_sys_rw_content_t'
   end
@@ -147,6 +151,11 @@ node['nt-deploy']['sites'].each do |site, data|
       :admin_url => magento[site]['admin_url']
     })
     only_if { magento[site]['site_type'] == "magento" }
+  end
+  
+  cron_d "magento_cron_#{site}" do
+    command "/bin/sh #{magento[site]['site_path']}/#{site}/magento/cron.sh"
+    user    'apache'
   end
 
 end
