@@ -87,6 +87,10 @@ node['nt-deploy']['sites'].each do |site, data|
     secontext 'httpd_sys_rw_content_t'
   end
   
+  selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/includes(/.*)?" do
+    secontext 'httpd_sys_rw_content_t'
+  end
+  
   selinux_policy_fcontext "#{magento[site]['site_path']}/#{site}/magento/var(/.*)?" do
     secontext 'httpd_sys_rw_content_t'
   end
@@ -110,6 +114,22 @@ node['nt-deploy']['sites'].each do |site, data|
       mode '0644'
       owner 'apache'
       group 'apache'
+    end
+  end
+  
+  file "#{magento[site]['site_path']}/#{site}/magento/includes/config.php" do
+    mode '0664'
+    owner 'apache'
+    group 'apache'
+  end
+  
+  %w{export import importexport package report}.each do |folder|
+    directory "#{magento[site]['site_path']}/#{site}/magento/var/#{folder}" do
+      owner 'apache'
+      group 'apache'
+      mode '0755'
+      recursive true
+      action :create
     end
   end
   
