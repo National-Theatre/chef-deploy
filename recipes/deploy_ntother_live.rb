@@ -33,7 +33,7 @@ end
 package 'unzip'
 
 execute 'unzip_code' do
-  cwd     '/mnt/data-store'
+  cwd     '/mnt/data-store/NTMicrosites'
   command 'unzip -q -o NTOtherDrupal.zip'
   action  :nothing
 end
@@ -63,6 +63,7 @@ nt_deploy "linburyprize" do
     cron_key data_bag_item('ntother_live', 'linburyprize')['cron']
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
 end
 
 nt_deploy "newviews" do
@@ -77,6 +78,7 @@ nt_deploy "newviews" do
     cron_key data_bag_item('ntother_live', 'newviews')['cron']
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
 end
 
 nt_deploy "ntfuture" do
@@ -91,6 +93,7 @@ nt_deploy "ntfuture" do
     cron_key data_bag_item('ntother_live', 'ntfuture')['cron']
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
 end
 
 nt_deploy "allabouttheatre" do
@@ -105,5 +108,6 @@ nt_deploy "allabouttheatre" do
     cron_key data_bag_item('ntother_live', 'allabouttheatre')['cron']
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
 end
 

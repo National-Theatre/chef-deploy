@@ -15,6 +15,11 @@ service "httpd" do
   action :enable
 end
 
+user 'ec2-user' do
+  home '/home/ec2-user'
+  shell '/bin/bash'
+end
+
 cookbook_file '/var/www/html/apc-nrp.php' do
   source 'apc-nrp.php'
   owner 'apache'
