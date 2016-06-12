@@ -91,7 +91,7 @@ nt_deploy "ntfuture" do
     site_label 'NTMicrosites'
     use_bundle true
     site_dns 'ntfuture.cms.nationaltheatre.org.uk'
-    vhost 'ntfuture'
+    vhost 'NT-Future'
     db_user 'ntfuture'
     db_pwd data_bag_item('ntother_live', 'ntfuture')['pwd']
     cache_prefix 'ntf_'
