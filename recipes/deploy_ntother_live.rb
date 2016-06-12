@@ -64,6 +64,9 @@ nt_deploy "linburyprize" do
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
     site_path '/mnt/data-store/'
+    aws_bucket 'linbury-prize'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
 end
 
 nt_deploy "newviews" do
@@ -79,6 +82,9 @@ nt_deploy "newviews" do
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
     site_path '/mnt/data-store/'
+    aws_bucket 'live-newviews'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
 end
 
 nt_deploy "ntfuture" do
@@ -94,6 +100,9 @@ nt_deploy "ntfuture" do
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
     site_path '/mnt/data-store/'
+    aws_bucket 'live-ntfuture'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
 end
 
 nt_deploy "allabouttheatre" do
@@ -109,5 +118,8 @@ nt_deploy "allabouttheatre" do
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
     site_path '/mnt/data-store/'
+    aws_bucket 'live-allabouttheatre'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
 end
 

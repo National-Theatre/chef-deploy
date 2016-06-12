@@ -148,8 +148,8 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     action :create
     recursive true
   end
-  execute 'tmp_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t /media/ephemeral0/private/#{site}(/.*)?"
+  selinux_policy_fcontext "/media/ephemeral0/private/#{site}(/.*)?" do
+    secontext 'httpd_sys_rw_content_t'
   end
 
   template "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/settings.php" do
@@ -169,7 +169,10 @@ $conf['page_cache_invoke_hooks'] = FALSE;
       :sites_caches => drupal[site]['sites_caches'],
       :cache_settings => cache_settings,
       :composer_json_dir => "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files/composer",
-      :composer_vendor_dir => 'sites/all/libraries/composer'
+      :composer_vendor_dir => 'sites/all/libraries/composer',
+      :amazons3_bucket => new_resource.aws_bucket,
+      :amazons3_key    => new_resource.aws_key,
+      :amazons3_secret => new_resource.aws_secret
     })
   end
   if ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar")

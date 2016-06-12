@@ -25,3 +25,6 @@ attribute :cron_key, :kind_of => String, :default => 'cron-key'
 attribute :memcache_host, :kind_of => String, :default => nil
 attribute :redis_host, :kind_of => String, :default => nil
 attribute :cache_type, :kind_of => String, :default => 'none'
+attribute :aws_bucket, :kind_of => String
+attribute :aws_key, :kind_of => String
+attribute :aws_secret, :kind_of => String
