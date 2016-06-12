@@ -149,8 +149,7 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     recursive true
   end
   execute 'tmp_chcon' do
-    command "chcon -R -t httpd_sys_rw_content_t media/ephemeral0/private/#{site}"
-    not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
+    command "chcon -R -t httpd_sys_rw_content_t /media/ephemeral0/private/#{site}(/.*)?"
   end
 
   template "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/settings.php" do
