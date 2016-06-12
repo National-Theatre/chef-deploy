@@ -120,6 +120,19 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     action :create
     recursive true
   end
+  directory "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files/composer" do
+    owner 'apache'
+    group 'apache'
+    mode '0755'
+    action :create
+    recursive true
+  end
+  execute 'copy_composer' do
+    command "cp #{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/composer.json #{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files/composer/composer.json"
+      only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/composer.json")}
+      not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/files/composer/composer.json")}
+  end
+  
   execute 'drupal_chcon' do
     command "chcon -R -t httpd_sys_rw_content_t #{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}"
     not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}/settings.php") || drupal[site]['site_type'] != "drupal" }
