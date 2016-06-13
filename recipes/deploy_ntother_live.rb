@@ -41,7 +41,7 @@ end
 include_recipe 's3_file::dependencies'
 
 s3_file "/mnt/data-store/NTMicrosites/NTOtherDrupal.zip" do
-    remote_path "/NTOtherDrupal/v2.0.0.zip"
+    remote_path "/NTOtherDrupal/v2.0.1.zip"
     bucket "live-codeartifacts"
     s3_url "https://s3-eu-west-1.amazonaws.com/live-codeartifacts"
     mode "0644"
