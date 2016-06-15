@@ -141,7 +141,7 @@ node['nt-deploy']['sites'].each do |site, data|
     source "local.xml.erb"
     mode '0440'
     owner 'apache'
-    group 'apache'
+    group 'ec2-user'
     variables ({
       :db_name   => magento[site]['db_name'],
       :db_user   => magento[site]['db_user'],
@@ -151,11 +151,6 @@ node['nt-deploy']['sites'].each do |site, data|
       :admin_url => magento[site]['admin_url']
     })
     only_if { magento[site]['site_type'] == "magento" }
-  end
-  
-  cron_d "magento_cron_php_#{site}" do
-    command "php -f #{magento[site]['site_path']}/#{site}/magento/cron.php"
-    user    'ec2-user'
   end
   
   cron_d "magento_cron_sh_#{site}" do

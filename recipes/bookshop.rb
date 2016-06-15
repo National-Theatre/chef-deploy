@@ -30,3 +30,16 @@ end
       secontext 'httpd_sys_rw_content_t'
     end
 end
+
+link '/var/www/bookshop/magento/var/aitreports' do
+  to '/var/www/bookshop/magento/media/aitreports'
+  group 'apache'
+  owner 'apache'
+end
+
+link '/var/www/bookshop/magento/var/smartreports' do
+  to '/var/www/bookshop/magento/media/smartreports'
+  group 'apache'
+  owner 'apache'
+end
+
