@@ -194,7 +194,10 @@ $conf['page_cache_invoke_hooks'] = FALSE;
       :sites_caches => drupal[site]['sites_caches'],
       :cache_settings => cache_settings,
       :composer_json_dir => "#{drupal[site]['site_path']}/#{site_label}/drupal/sites/#{drupal[site]['vhost']}/files/composer",
-      :composer_vendor_dir => 'sites/all/libraries/composer'
+      :composer_vendor_dir => 'sites/all/libraries/composer',
+      :amazons3_bucket => new_resource.aws_bucket,
+      :amazons3_key    => node['nt-deploy']['default']['aws_key'],
+      :amazons3_secret => node['nt-deploy']['default']['aws_secret']
     })
     only_if { drupal[site]['site_type'] == "drupal" }
   end

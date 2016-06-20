@@ -20,6 +20,14 @@ user 'ec2-user' do
   shell '/bin/bash'
 end
 
+directory '/etc/scalr/private.d/vhosts' do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+  recursive true
+end
+
 cookbook_file '/var/www/html/apc-nrp.php' do
   source 'apc-nrp.php'
   owner 'apache'
