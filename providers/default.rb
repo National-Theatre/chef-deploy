@@ -226,7 +226,7 @@ $conf['page_cache_invoke_hooks'] = FALSE;
   cron_d "hourly_drush_cron_#{site}" do
     minute  30
     command "cd #{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}; /usr/bin/drush --uri=http://#{drupal[site]['site_dns']} cron"
-    user    'apache'
+    user    'ec2-user'
   end
   hostsfile_entry '127.0.0.1' do
     hostname  drupal[site]['site_dns']
