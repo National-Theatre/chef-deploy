@@ -17,11 +17,14 @@ end
 
 execute 'get_drush' do
   command 'composer global require drush/drush'
-  not_if { ::File.exists?("/root/.composer/vendor/bin/drush")}
+  not_if { ::File.exists?("/home/ec2-user/.config/composer/vendor/bin/drush")}
+  user 'ec2-user'
+  group 'ec2-user'
 end
 
-execute 'link_drush' do
-  command 'ln -s /root/.composer/vendor/bin/drush /usr/bin/drush'
-  only_if { ::File.exists?("/root/.composer/vendor/bin/drush")}
-  not_if { ::File.exists?("/usr/bin/drush")}
+link '/usr/bin/drush' do
+  to '/home/ec2-user/.config/composer/vendor/bin/drush'
+  only_if { ::File.exists?("/home/ec2-user/.config/composer/vendor/bin/drush")}
+  owner 'ec2-user'
+  group 'ec2-user'
 end
