@@ -34,20 +34,20 @@ package 'unzip'
 
 execute 'unzip_code' do
   cwd     '/mnt/data-store/NTMicrosites'
-  command 'unzip -q -o v2.0.2.zip'
+  command "unzip -q -o #{node['nt-deploy']['code_version']}.zip"
   action  :nothing
 end
 
 include_recipe 's3_file::dependencies'
 
-s3_file "/mnt/data-store/NTMicrosites/v2.0.2.zip" do
-    remote_path "/NTOtherDrupal/v2.0.2.zip"
+s3_file "/mnt/data-store/NTMicrosites/#{node['nt-deploy']['code_version']}.zip" do
+    remote_path "/NTOtherDrupal/#{node['nt-deploy']['code_version']}.zip"
     bucket "live-codeartifacts"
     s3_url "https://s3-eu-west-1.amazonaws.com/live-codeartifacts"
     mode "0644"
     action :create
     notifies :run, 'execute[unzip_code]', :immediately
-    not_if { ::File.exists?("/mnt/data-store/NTMicrosites/v2.0.2.zip") }
+    not_if {  ::File.exists?("/mnt/data-store/NTMicrosites/#{node['nt-deploy']['code_version']}.zip") }
 end
 
 keys = data_bag('ntother_live')
