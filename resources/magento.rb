@@ -15,10 +15,10 @@ attribute :db_user, :kind_of => String, :default => nil
 attribute :db_pwd, :kind_of => String, :default => nil
 attribute :db_host, :kind_of => String, :default => nil
 attribute :elb, :kind_of => String, :default => nil
+attribute :salt, :kind_of => String, :default => ''
 attribute :cache_prefix, :kind_of => String, :default => nil
 attribute :sites_caches, :kind_of => Array, :default => []
 attribute :site_dns, :kind_of => String, :default => 'www.example.net'
-attribute :cron_key, :kind_of => String, :default => 'cron-key'
 attribute :memcache_host, :kind_of => String, :default => nil
 attribute :redis_host, :kind_of => String, :default => nil
 attribute :cache_type, :kind_of => String, :default => 'none'

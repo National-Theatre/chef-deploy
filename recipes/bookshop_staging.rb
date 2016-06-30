@@ -16,18 +16,14 @@ selinux_policy_boolean 'httpd_can_network_connect' do
     notifies :restart,'service[httpd]', :delayed
 end
 
-ruby_block "get_region" do
-    block do
-        #tricky way to load this Chef::Mixin::ShellOut utilities
-        Chef::Resource::RubyBlock.send(:include, Chef::Mixin::ShellOut)      
-        command = 'curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone'
-        command_out = shell_out(command)
-        node.set['aws_region'] = command_out.stdout
-    end
-    action :create
-end
+package 'nfs-utils'
 
-directory "/var/www/bookshop/magento" do
+Chef::Resource::RubyBlock.send(:include, Chef::Mixin::ShellOut)      
+command = 'curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone'
+command_out = shell_out(command)
+region = command_out.stdout
+
+directory "/var/www/bookshop" do
     owner 'apache'
     group 'apache'
     mode '0755'
@@ -36,11 +32,11 @@ directory "/var/www/bookshop/magento" do
   end
 
 mount 'code_base' do
-    device "#{node['aws_region']}.fs-24678aed.efs.eu-west-1.amazonaws.com"
+    device "#{region}.fs-24678aed.efs.eu-west-1.amazonaws.com:/"
     fstype 'nfs4'
-    mount_point '/var/www/bookshop/magento'
+    mount_point '/var/www/bookshop'
     action [:enable, :mount]
-    options "_netdev,allow_other,nonempty,noatime,nfsvers=4.1"
+    options "noatime,nfsvers=4.1"
 end
 
 selinux_policy_boolean 'httpd_use_nfs' do
@@ -72,15 +68,4 @@ end
     end
 end
 
-link '/var/www/bookshop/magento/var/aitreports' do
-  to '/var/www/bookshop/magento/media/aitreports'
-  group 'apache'
-  owner 'apache'
-end
-
-link '/var/www/bookshop/magento/var/smartreports' do
-  to '/var/www/bookshop/magento/media/smartreports'
-  group 'apache'
-  owner 'apache'
-end
 

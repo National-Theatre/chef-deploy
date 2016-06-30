@@ -47,7 +47,6 @@ action :create do
   
   magento[site]['site_dns'] = new_resource.site_dns
   magento[site]['admin_url'] = new_resource.admin_url
-  magento[site]['cron_key'] = new_resource.cron_key
   
   directory "/media/ephemeral0/tmp/#{site}" do
     owner 'apache'
@@ -89,7 +88,7 @@ action :create do
     secontext 'httpd_sys_rw_content_t'
   end
   
-  %w{app dev downloader downloaderntmgt errors includes js lib newslettersucess pkginfo shell skin var}.each do |folder|
+  %w{app dev downloader downloaderntmgt errors includes js lib newslettersucess pkginfo shell skin var media}.each do |folder|
     directory "#{magento[site]['site_path']}/#{site}/magento/#{folder}" do
       owner 'apache'
       group 'apache'
@@ -99,7 +98,7 @@ action :create do
     end
   end
   Dir.foreach("#{magento[site]['site_path']}/#{site}/magento") do |item|
-    next if item == '.' or item == '..' or File.directory?("#{magento[site]['site_path']}/#{site}/magento/#{item}")
+    next if item == '.' or item == '..' or ::File.directory?("#{magento[site]['site_path']}/#{site}/magento/#{item}")
     file "#{magento[site]['site_path']}/#{site}/magento/#{item}" do
       mode '0644'
       owner 'apache'
