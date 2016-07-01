@@ -44,6 +44,14 @@ selinux_policy_boolean 'httpd_use_nfs' do
     notifies :restart,'service[httpd]', :delayed
 end
 
+cookbook_file '/opt/rh/php55/root/etc/php.d/opcache.ini' do
+  source 'opcache-magento.ini'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+  action :create
+  notifies :restart,'service[httpd]', :delayed
+end
 
 keys = data_bag('bookshop')
 

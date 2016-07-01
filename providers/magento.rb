@@ -48,7 +48,7 @@ action :create do
   magento[site]['site_dns'] = new_resource.site_dns
   magento[site]['admin_url'] = new_resource.admin_url
   
-  directory "/media/ephemeral0/tmp/#{site}" do
+  directory "/media/ephemeral0/tmp/#{site}/cache" do
     owner 'apache'
     group 'apache'
     mode '0755'
