@@ -218,20 +218,20 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     only_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar") && ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer.json") && drupal[site]['site_type'] == "drupal" }
     not_if { ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/all/libraries/composer/autoload.php") }
   end
-  cron_d "hourly_cron_#{site}" do
-    minute  0
-    command "curl -o /dev/null -sS http://#{drupal[site]['site_dns']}/cron.php?cron_key=#{drupal[site]['cron_key']}"
-    user    'apache'
-  end
+  #cron_d "hourly_cron_#{site}" do
+  #  minute  0
+  #  command "curl -o /dev/null -sS http://#{drupal[site]['site_dns']}/cron.php?cron_key=#{drupal[site]['cron_key']}"
+  #  user    'apache'
+  #end
   cron_d "hourly_drush_cron_#{site}" do
     minute  30
     command "cd #{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}; /usr/bin/drush --uri=http://#{drupal[site]['site_dns']} cron"
     user    'ec2-user'
   end
-  hostsfile_entry '127.0.0.1' do
-    hostname  drupal[site]['site_dns']
-    unique    true
-    comment   'Append by Recipe drupal_deploy'
-    action    :append
-  end
+  #hostsfile_entry '127.0.0.1' do
+  #  hostname  drupal[site]['site_dns']
+  #  unique    true
+  #  comment   'Append by Recipe drupal_deploy'
+  #  action    :append
+  #end
 end
