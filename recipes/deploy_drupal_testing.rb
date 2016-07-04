@@ -101,6 +101,7 @@ nt_deploy "dev_catering" do
     site_label 'NTMicrositesDev'
     repo_path 'National-Theatre/NT-Web-Hosting.git'
     repo_branch 'staging'
+    domain true
     site_dns 'catering.nttest.org'
     vhost 'default'
     db_user 'catering'

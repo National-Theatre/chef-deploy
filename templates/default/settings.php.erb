@@ -35,6 +35,7 @@ $conf['cache_backends'][] = '<%= cache %>';
 <% end %>
 
 <%= @cache_settings %>
+<%= @domain_settings %>
 
 $conf['file_temporary_path'] = '/media/ephemeral0/tmp/<%= @site_name %>';
 $conf['file_private_path'] = '/media/ephemeral0/private/<%= @site_name %>';

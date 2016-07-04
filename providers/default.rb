@@ -108,6 +108,11 @@ $conf['page_cache_invoke_hooks'] = FALSE;
     cache_settings = ''
   end
   
+  domain_settings = ''
+  if new_resource.domain
+      domain_settings = 'include_once DRUPAL_ROOT . \'/sites/all/modules/contrib/domain/settings.inc\';'
+  end
+  
   directory "#{drupal[site]['site_path']}/#{site_label}/#{new_resource.drupal_root}/sites/#{drupal[site]['vhost']}" do
     mode '0755'
     action :create
@@ -185,7 +190,8 @@ $conf['page_cache_invoke_hooks'] = FALSE;
       :composer_vendor_dir => 'sites/all/libraries/composer',
       :amazons3_bucket => new_resource.aws_bucket,
       :amazons3_key    => new_resource.aws_key,
-      :amazons3_secret => new_resource.aws_secret
+      :amazons3_secret => new_resource.aws_secret,
+      :domain_settings => domain_settings
     })
   end
   if ::File.exists?("#{drupal[site]['site_path']}/#{site_label}/tests/composer.phar")
