@@ -124,3 +124,20 @@ nt_deploy "allabouttheatre" do
     aws_secret node['nt-deploy']['default']['aws_secret']
 end
 
+nt_deploy "catering" do
+    site_label 'NTMicrosites'
+    use_bundle true
+    domain true
+    site_dns 'catering.nationaltheatre.org.uk'
+    vhost 'default'
+    db_user 'catering'
+    db_pwd data_bag_item('ntother_live', 'catering')['pwd']
+    cache_prefix 'cat_'
+    salt data_bag_item('ntother_live', 'catering')['salt']
+    cron_key data_bag_item('ntother_live', 'catering')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    aws_bucket 'live-catering'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
+end
