@@ -137,6 +137,7 @@ nt_deploy "catering" do
     cron_key data_bag_item('ntother_live', 'catering')['cron']
     cache_type 'Redis_Cache'
     sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
     aws_bucket 'live-catering'
     aws_key node['nt-deploy']['default']['aws_key']
     aws_secret node['nt-deploy']['default']['aws_secret']
