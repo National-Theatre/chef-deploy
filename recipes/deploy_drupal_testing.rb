@@ -115,3 +115,21 @@ nt_deploy "dev_catering" do
     aws_key node['nt-deploy']['default']['aws_key']
     aws_secret node['nt-deploy']['default']['aws_secret']
 end
+
+nt_deploy "dev_thedeck" do
+    site_label 'NTMicrositesDev'
+    repo_path 'National-Theatre/NT-Web-Hosting.git'
+    repo_branch 'staging'
+    site_dns 'thedeck.nttest.org'
+    vhost 'thedeck'
+    db_user 'thedeck'
+    db_pwd data_bag_item('drupal_dev', 'thedeck')['pwd']
+    cache_prefix 'dev_tdk_'
+    salt data_bag_item('drupal_dev', 'thedeck')['salt']
+    cron_key data_bag_item('drupal_dev', 'thedeck')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    aws_bucket 'test-thedeck'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
+end
