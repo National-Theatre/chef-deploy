@@ -142,3 +142,21 @@ nt_deploy "catering" do
     aws_key node['nt-deploy']['default']['aws_key']
     aws_secret node['nt-deploy']['default']['aws_secret']
 end
+
+nt_deploy "thedeck" do
+    site_label 'NTMicrosites'
+    use_bundle true
+    site_dns 'thedeck.nationaltheatre.org.uk'
+    vhost 'thedeck'
+    db_user 'thedeck'
+    db_pwd data_bag_item('ntother_live', 'thedeck')['pwd']
+    cache_prefix 'tdk_'
+    salt data_bag_item('ntother_live', 'thedeck')['salt']
+    cron_key data_bag_item('ntother_live', 'thedeck')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
+    aws_bucket 'live-thedeck'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
+end
