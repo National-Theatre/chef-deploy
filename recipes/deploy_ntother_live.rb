@@ -54,6 +54,7 @@ execute 'unzip_code' do
   cwd     '/mnt/data-store/NTMicrosites'
   command "unzip -q -o #{node['nt-deploy']['code_version']}.zip"
   action  :nothing
+  notifies :restart,'service[httpd]', :delayed
 end
 
 include_recipe 's3_file::dependencies'
