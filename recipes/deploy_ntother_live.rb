@@ -7,6 +7,24 @@
 # All rights reserved - Do Not Redistribute
 #
 
+service "httpd" do
+  action :nothing
+end
+
+selinux_policy_boolean 'httpd_can_network_connect' do
+    value true
+    notifies :restart,'service[httpd]', :delayed
+end
+
+cookbook_file '/etc/opt/rh/rh-php56/php.d/10-opcache.ini' do
+  source 'opcache-php56-drupal.ini'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+  action :create
+  notifies :restart,'service[httpd]', :delayed
+end
+
 directory "/root/.composer" do
   mode '0755'
   action :create
