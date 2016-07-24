@@ -133,3 +133,21 @@ nt_deploy "dev_thedeck" do
     aws_key node['nt-deploy']['default']['aws_key']
     aws_secret node['nt-deploy']['default']['aws_secret']
 end
+
+nt_deploy "dev_connections" do
+    site_label 'NTMicrositesDev'
+    repo_path 'National-Theatre/NT-Web-Hosting.git'
+    repo_branch 'staging'
+    site_dns 'connections.nttest.org'
+    vhost 'connections'
+    db_user 'dev_connections'
+    db_pwd data_bag_item('drupal_dev', 'connections')['pwd']
+    cache_prefix 'dev_cnt_'
+    salt data_bag_item('drupal_dev', 'connections')['salt']
+    cron_key data_bag_item('drupal_dev', 'connections')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    aws_bucket 'test-connections'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
+end
