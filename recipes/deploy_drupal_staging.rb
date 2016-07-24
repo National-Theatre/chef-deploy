@@ -142,7 +142,7 @@ nt_deploy "stg_connections" do
     vhost 'connections'
     db_user 'connections'
     db_pwd data_bag_item('drupal_stg', 'connections')['pwd']
-    cache_prefix 'dev_cnt_'
+    cache_prefix 'stg_cnt_'
     salt data_bag_item('drupal_stg', 'connections')['salt']
     cron_key data_bag_item('drupal_stg', 'connections')['cron']
     cache_type 'Redis_Cache'
