@@ -151,3 +151,21 @@ nt_deploy "stg_connections" do
     aws_key node['nt-deploy']['default']['aws_key']
     aws_secret node['nt-deploy']['default']['aws_secret']
 end
+
+nt_deploy "stg_ntjobs" do
+    site_label 'NTMicrosites'
+    repo_path 'National-Theatre/NT-Web-Hosting.git'
+    repo_branch 'master'
+    site_dns 'ntjobs.ntstaging.org'
+    vhost 'ntjobs'
+    db_user 'ntjobs'
+    db_pwd data_bag_item('drupal_stg', 'ntjobs')['pwd']
+    cache_prefix 'stg_ntj_'
+    salt data_bag_item('drupal_stg', 'ntjobs')['salt']
+    cron_key data_bag_item('drupal_stg', 'ntjobs')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    aws_bucket 'stg-ntjobs'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
+end
