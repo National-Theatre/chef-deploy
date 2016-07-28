@@ -44,6 +44,27 @@ selinux_policy_boolean 'httpd_use_nfs' do
     notifies :restart,'service[httpd]', :delayed
 end
 
+package 'unzip'
+
+execute 'unzip_code' do
+  cwd     '/var/www/bookshop'
+  command "unzip -q -o #{node['nt-deploy']['bookshop_version']}.zip"
+  action  :nothing
+  notifies :restart,'service[httpd]', :delayed
+end
+
+include_recipe 's3_file::dependencies'
+
+s3_file "/var/www/bookshop/#{node['nt-deploy']['bookshop_version']}.zip" do
+    remote_path "/Bookshop/#{node['nt-deploy']['bookshop_version']}.zip"
+    bucket "live-codeartifacts"
+    s3_url "https://s3-eu-west-1.amazonaws.com/live-codeartifacts"
+    mode "0644"
+    action :create
+    notifies :run, 'execute[unzip_code]', :immediately
+    not_if {  ::File.exists?("/var/www/bookshop/#{node['nt-deploy']['bookshop_version']}.zip") }
+end
+
 cookbook_file '/opt/rh/php55/root/etc/php.d/opcache.ini' do
   source 'opcache-magento.ini'
   owner 'apache'
