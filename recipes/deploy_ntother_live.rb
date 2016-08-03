@@ -197,3 +197,21 @@ nt_deploy "connections" do
     aws_key node['nt-deploy']['default']['aws_key']
     aws_secret node['nt-deploy']['default']['aws_secret']
 end
+
+nt_deploy "ntjobs" do
+    site_label 'NTMicrosites'
+    use_bundle true
+    site_dns 'ntjobs.nationaltheatre.org.uk'
+    vhost 'ntjobs'
+    db_user 'ntjobs'
+    db_pwd data_bag_item('ntother_live', 'ntjobs')['pwd']
+    cache_prefix 'ntj_'
+    salt data_bag_item('ntother_live', 'ntjobs')['salt']
+    cron_key data_bag_item('ntother_live', 'ntjobs')['cron']
+    cache_type 'Redis_Cache'
+    sites_caches ['sites/all/modules/contrib/redis/redis.autoload.inc']
+    site_path '/mnt/data-store/'
+    aws_bucket 'live-ntjobs'
+    aws_key node['nt-deploy']['default']['aws_key']
+    aws_secret node['nt-deploy']['default']['aws_secret']
+end
