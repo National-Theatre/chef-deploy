@@ -50,7 +50,7 @@ end
 
 package 'unzip'
 
-execute 'unzip_code' do
+execute 'dnl_unzip_code' do
   cwd     '/mnt/data-store/NTMicrosites'
   command "unzip -q -o #{node['nt-deploy']['code_version']}.zip"
   action  :nothing
@@ -65,7 +65,7 @@ s3_file "/mnt/data-store/NTMicrosites/#{node['nt-deploy']['code_version']}.zip" 
     s3_url "https://s3-eu-west-1.amazonaws.com/live-codeartifacts"
     mode "0644"
     action :create
-    notifies :run, 'execute[unzip_code]', :immediately
+    notifies :run, 'execute[dnl_unzip_code]', :immediately
     not_if {  ::File.exists?("/mnt/data-store/NTMicrosites/#{node['nt-deploy']['code_version']}.zip") }
 end
 
