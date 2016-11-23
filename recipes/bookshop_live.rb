@@ -17,6 +17,10 @@ selinux_policy_boolean 'httpd_can_network_connect' do
 end
 
 package 'nfs-utils'
+package 'cachefilesd'
+service "cachefilesd" do
+  action [:enable, :start]
+end
 
 Chef::Resource::RubyBlock.send(:include, Chef::Mixin::ShellOut)      
 command = 'curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone'
@@ -36,7 +40,7 @@ mount 'code_base' do
     fstype 'nfs4'
     mount_point '/var/www/bookshop'
     action [:enable, :mount]
-    options "noatime,nfsvers=4.1"
+    options "noatime,nfsvers=4.1,fsc,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2"
 end
 
 selinux_policy_boolean 'httpd_use_nfs' do
@@ -65,12 +69,17 @@ s3_file "/var/www/bookshop/#{node['nt-deploy']['bookshop_version']}.zip" do
     not_if {  ::File.exists?("/var/www/bookshop/#{node['nt-deploy']['bookshop_version']}.zip") }
 end
 
-cookbook_file '/opt/rh/php55/root/etc/php.d/opcache.ini' do
+cookbook_file '/opt/rh/php55/root/etc/php.d/10-opcache.ini' do
   source 'opcache-magento.ini'
   owner 'apache'
   group 'apache'
   mode '0644'
   action :create
+  notifies :restart,'service[httpd]', :delayed
+end
+
+template '/etc/httpd/conf.modules.d/01-prefork.conf' do
+  source 'prefork.conf.erb'
   notifies :restart,'service[httpd]', :delayed
 end
 
